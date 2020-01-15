@@ -21,6 +21,12 @@ class styles:
                 background-color: silver;
                 margin-left: 5px;
             }
+            QLabel
+            {
+                font-size: 12px;
+           
+            }
+           
 
             QWidget:item:hover
             {
@@ -91,15 +97,18 @@ class styles:
                 /*border: 1px solid darkgray;*/
             }
 
-            QLineEdit
+           
+             QLineEdit
             {
                 background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4d4d4d, stop: 0 #646464, stop: 1 #5d5d5d);
                 padding: 1px;
                 border-style: solid;
                 border: 1px solid #1e1e1e;
                 border-radius: 5;
+                font-size: 12px;
             }
 
+            
             QPushButton
             {
                 color: #b1b1b1;
@@ -172,6 +181,7 @@ class styles:
             {
                 border: 1px solid darkgray;
                 margin-top: 10px;
+                border-radius: 5;
             }
 
             QGroupBox:focus

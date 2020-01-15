@@ -130,3 +130,6 @@ dmypy.json
 
 #vscode python config
 .vscode
+
+#folder for test videos
+/test_videos

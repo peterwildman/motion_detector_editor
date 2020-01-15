@@ -6,7 +6,7 @@ import cv2, time
 class video_motion_detector():
 
     def __init__(self):
-        self.path = "C:\\test\\tesla_motion_detector\\"
+        self.path = "C:\\test\\motion"
         self.fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
         self.out = cv2.VideoWriter((self.path + "out_test.avi"), self.fourcc, 24,(1280,960))
 
@@ -69,5 +69,5 @@ class video_motion_detector():
         self._close_video_tools()
 
 vdm = video_motion_detector()
-video_file_list=["front.mp4", "front2.mp4"]
+video_file_list=["test_videos\\front.mp4", "test_videos\\front2.mp4"]
 vdm.main(video_file_list)
