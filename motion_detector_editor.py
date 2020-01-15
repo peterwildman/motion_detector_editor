@@ -49,7 +49,7 @@ class ProgramUI(QtWidgets.QDialog):
         newstyle = styles()
         self.setStyleSheet(newstyle.dark_orange)
 
-        self.setWindowTitle("Program Name")
+        self.setWindowTitle("Motion Detector Editor")
         self.setFixedSize(375, 250)
         # create the main layout
         self.main_layout = QVBoxLayout()
@@ -181,7 +181,7 @@ class ProgramCtrl:
     def _runtheprogram(self):
 
         if self._model.oktoruncheck(self._view.showdialog):            
-            self._model.theprogram()  
+            self._model.theprogram(self._view.showdialog)  
     
     def _wildcardchange(self):
         self._model._sortvideolist(self._view.lineEdit.text())
@@ -233,17 +233,20 @@ class ProgramModel:
         return True
 
     def _capture_motion(self, video_file):
-        self.out = cv2.VideoWriter((self.savefilelocation), self.fourcc, 24,(1280,960))
+        
         self.video=cv2.VideoCapture(video_file)
         self._check = True
         self._first_frame = None
+        self._frame_count = 0
+        
+        #
         while self._check:
             self._check, frame = self.video.read()
             
         
             self._status=0
             if self._check:
-            
+                self._frame_count = self._frame_count + 1
                 gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
                 gray=cv2.GaussianBlur(gray,(21,21),0)
                 if self._first_frame is None:
@@ -253,20 +256,26 @@ class ProgramModel:
                 delta_frame=cv2.absdiff(self._first_frame,gray)
                 thresh_frame = cv2.threshold(delta_frame, 30, 255, cv2.THRESH_BINARY)[1]
                 thresh_frame= cv2.dilate(thresh_frame, None, iterations=2)
-
+                #cnts = None
                 (cnts,_)=cv2.findContours(thresh_frame.copy(),cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
                 for contour in cnts:
                     if cv2.contourArea(contour) < 1000:
                         continue
+                    if self._frame_count < 30:
+                        print("action on first frame")
+                        self._errored_videos.append(tuple((video_file,"action on first frame")))
+                        return
+                    #print(self._frame_count)
                     self._status = 1
-                    # (x,y,w,h)=cv2.boundingRect(contour)
-                    # cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 3)
+                   # (x,y,w,h)=cv2.boundingRect(contour)
+                  #  cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 3)
 
                 #cv2.imshow("Capturing", gray)
                # cv2.imshow("Delta Frame",delta_frame)
                # cv2.imshow("Threshold Frame",thresh_frame)
-                cv2.imshow("Color Frame",frame)
+                previewframe = cv2.resize(frame, (480,270 ))
+                cv2.imshow("Color Frame",previewframe )
                 if self._status == 1:
                     self.out.write(frame)
                 
@@ -277,7 +286,9 @@ class ProgramModel:
                 break
 
     def _trim_videos(self, video_list):
+       
         progress_amount = int(100/(len(video_list)+1))+1
+        self.out = cv2.VideoWriter((self.savefilelocation), self.fourcc, 24,(1280,960))
         for video_file in video_list:
             self.progress = self.progress + progress_amount
             self._capture_motion(video_file)  
@@ -309,11 +320,23 @@ class ProgramModel:
         self.wildcard_video_list = newvideos
         
       
+    def _format_error_message(self, errored_videos):
+        error_message = ""
+        for video in errored_videos:
+            error_message = error_message + ("\n video "+ video[0] +" \n error message " + video[1])
+        return error_message 
 
-
-    def theprogram(self):   
+    def theprogram(self,popup):   
         self.progress = 0 
+        self._errored_videos =[]
         self.run_the_edit(self.wildcard_video_list)
+        print(self._errored_videos)
+        print(len(self._errored_videos) )
+        if len(self._errored_videos) > 0:
+            print("popup fired")
+            popup("Some Videos Errored while processing", title = "Not all Videos Completes", details = (self._format_error_message(self._errored_videos)))
+            
+
 
     
     
